@@ -2,10 +2,10 @@ package warp
 
 import (
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"net"
 	"strings"
+	"sync"
 	"time"
 	"unsafe"
 
@@ -13,13 +13,16 @@ import (
 )
 
 func sendARP(ips []net.IP, iface net.Interface) error {
-	var err error
+	var wg sync.WaitGroup
 	for _, ip := range ips {
-		e := writeARP(ip, iface)
-		err = errors.Join(err, e)
-		<-time.After(writeInterval)
+		wg.Add(1)
+		go func() {
+			ping(ip.String())
+			wg.Done()
+		}()
 	}
-	return err
+	wg.Wait()
+	return nil
 }
 
 var writeInterval = 4 * time.Millisecond
