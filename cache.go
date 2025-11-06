@@ -6,8 +6,23 @@ import (
 	"io"
 	"net"
 	"regexp"
+	"runtime"
 	"strings"
 )
+
+func ParseARPCache(r io.Reader) Result {
+	switch runtime.GOOS {
+	case "windows":
+		return parseArpWindows(r)
+
+	case "darwin":
+		return parseArpDarwin(r)
+
+	default:
+		// at least try something
+		return parseArpLinux(r)
+	}
+}
 
 /*
 	ie. output from $ arp -a
@@ -49,7 +64,6 @@ func parseArpWindows(r io.Reader) Result {
 			continue
 		}
 		mac = strings.ReplaceAll(mac, "-", ":")
-		mac = strings.ToUpper(mac)
 		res[mac] = ip
 	}
 	return res
@@ -88,7 +102,6 @@ func parseArpDarwin(r io.Reader) Result {
 		if _, err := net.ParseMAC(mac); err != nil {
 			continue
 		}
-		mac = strings.ToUpper(mac)
 		res[mac] = ip
 	}
 	return res
