@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 	"time"
 
@@ -54,7 +55,25 @@ func main() {
 		log.Fatal(err)
 	}
 	res := warp.ParseARPCache(bytes.NewReader(data))
-	for mac, ip := range res {
+
+	var ipList []string
+	for ip := range res {
+		ipList = append(ipList, ip)
+	}
+	slices.SortFunc(ipList, func(a, b string) int {
+		ipA := net.ParseIP(a).To4()[3]
+		ipB := net.ParseIP(b).To4()[3]
+		switch {
+		case ipA < ipB:
+			return -1
+		case ipA > ipB:
+			return 1
+		default:
+			return 0
+		}
+	})
+	for _, ip := range ipList {
+		mac := res[ip]
 		fmt.Println(strings.ToLower(mac), ip)
 	}
 }

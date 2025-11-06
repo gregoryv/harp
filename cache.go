@@ -64,7 +64,7 @@ func parseArpWindows(r io.Reader) Result {
 			continue
 		}
 		mac = strings.ReplaceAll(mac, "-", ":")
-		res[mac] = ip
+		res[ip] = mac
 	}
 	return res
 }
@@ -102,7 +102,7 @@ func parseArpDarwin(r io.Reader) Result {
 		if _, err := net.ParseMAC(mac); err != nil {
 			continue
 		}
-		res[mac] = ip
+		res[ip] = mac
 	}
 	return res
 }
@@ -126,4 +126,5 @@ func parseArpLinux(r io.Reader) Result {
 
 var whitespaces = regexp.MustCompile(`\s+`)
 
+// map of ip -> mac
 type Result map[string]string
