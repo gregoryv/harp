@@ -1,12 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"log"
 	"net"
-	"os/exec"
 	"slices"
 	"strings"
 	"time"
@@ -32,11 +30,8 @@ func main() {
 
 		time.Sleep(8 * time.Duration(len(ips)) * time.Millisecond)
 	}
-	data, err := exec.Command("arp", "-a").Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-	res := harp.ParseARPCache(bytes.NewReader(data))
+	res := harp.Cache()
+	// ParseARPCache(bytes.NewReader(data))
 
 	var ipList []string
 	for ip := range res {

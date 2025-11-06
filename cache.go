@@ -2,15 +2,23 @@ package harp
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net"
+	"os/exec"
 	"regexp"
 	"runtime"
 	"strings"
 )
 
-func ParseARPCache(r io.Reader) Result {
+func Cache() Result {
+	data, err := exec.Command("arp", "-a").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	r := bytes.NewReader(data)
 	switch runtime.GOOS {
 	case "windows":
 		return parseArpWindows(r)
