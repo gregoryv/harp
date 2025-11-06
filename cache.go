@@ -33,6 +33,11 @@ func Cache() []Hit {
 		res = parseArpLinux(r)
 	}
 
+	return tidy(res)
+}
+
+// tidy filters unwanted hits and sorts them by ip
+func tidy(res []Hit) []Hit {
 	list := make([]Hit, 0, len(res))
 	for _, hit := range res {
 		hit.MAC = strings.ToLower(hit.MAC)

@@ -33,7 +33,7 @@ func Test_IPRange_err(t *testing.T) {
 	}{
 		{in: "192.168.1.a"},
 		{in: "192.168.1.10-9"},
-		{in: "192.168.1-2.9"},		
+		{in: "192.168.1-2.9"},
 	}
 
 	for _, c := range cases {
@@ -42,7 +42,6 @@ func Test_IPRange_err(t *testing.T) {
 			if err == nil {
 				t.Error("expect error")
 			}
-
 		})
 	}
 }
