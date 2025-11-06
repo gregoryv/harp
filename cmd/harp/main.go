@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"os"
 	"os/exec"
 	"slices"
 	"strings"
@@ -20,12 +19,7 @@ func main() {
 	targetIP := flag.String(
 		"ip", "", "arp IP range, e.g 192.1.1.3-128 or 192.1.1.*",
 	)
-	verbose := flag.Bool("verbose", false, "")
 	flag.Parse()
-
-	if *verbose {
-		harp.SetDebugOutput(os.Stderr)
-	}
 
 	if *targetIP != "" {
 		ips, err := harp.IPRange(*targetIP)
