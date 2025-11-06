@@ -10,26 +10,55 @@ import (
 	"os/exec"
 	"regexp"
 	"runtime"
+	"slices"
 	"strings"
 )
 
-func Cache() Result {
+func Cache() []Hit {
 	data, err := exec.Command("arp", "-a").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
 	r := bytes.NewReader(data)
+	var res []Hit
 	switch runtime.GOOS {
 	case "windows":
-		return parseArpWindows(r)
+		res = parseArpWindows(r)
 
 	case "darwin":
-		return parseArpDarwin(r)
+		res = parseArpDarwin(r)
 
 	default:
 		// at least try something
-		return parseArpLinux(r)
+		res = parseArpLinux(r)
 	}
+
+	list := make([]Hit, 0, len(res))
+	for _, hit := range res {
+		hit.MAC = strings.ToLower(hit.MAC)
+
+		switch {
+		case strings.HasPrefix(hit.IP, "224.0.0."):
+		case strings.HasPrefix(hit.IP, "239.192.152."):
+		case strings.HasPrefix(hit.IP, "239.255.255."):
+		case hit.MAC == "ff:ff:ff:ff:ff:ff":
+		default:
+			list = append(list, hit)
+		}
+	}
+	slices.SortFunc(list, func(a, b Hit) int {
+		ipA := net.ParseIP(a.IP).To4()[3]
+		ipB := net.ParseIP(b.IP).To4()[3]
+		switch {
+		case ipA < ipB:
+			return -1
+		case ipA > ipB:
+			return 1
+		default:
+			return 0
+		}
+	})
+	return list
 }
 
 /*
@@ -52,8 +81,8 @@ Interface: 192.168.1.71 --- 0x3
 	239.255.255.250       01-00-5e-7f-ff-fa     static
 	255.255.255.255       ff-ff-ff-ff-ff-ff     static
 */
-func parseArpWindows(r io.Reader) Result {
-	res := make(Result)
+func parseArpWindows(r io.Reader) []Hit {
+	res := make([]Hit, 0, 255)
 	s := bufio.NewScanner(r)
 	for s.Scan() {
 		line := s.Text()
@@ -72,7 +101,7 @@ func parseArpWindows(r io.Reader) Result {
 			continue
 		}
 		mac = strings.ReplaceAll(mac, "-", ":")
-		res[ip] = mac
+		res = append(res, Hit{ip, mac})
 	}
 	return res
 }
@@ -87,8 +116,8 @@ func parseArpWindows(r io.Reader) Result {
 ? (192.168.1.255) at ff:ff:ff:ff:ff:ff on en0 ifscope [ethernet]
 mdns.mcast.net (224.0.0.251) at 1:0:5e:0:0:fb on en0 ifscope permanent [ethernet]
 */
-func parseArpDarwin(r io.Reader) Result {
-	res := make(Result)
+func parseArpDarwin(r io.Reader) []Hit {
+	res := make([]Hit, 0, 255)
 	s := bufio.NewScanner(r)
 	for s.Scan() {
 		line := s.Text()
@@ -110,7 +139,7 @@ func parseArpDarwin(r io.Reader) Result {
 		if _, err := net.ParseMAC(mac); err != nil {
 			continue
 		}
-		res[ip] = mac
+		res = append(res, Hit{ip, mac})
 	}
 	return res
 }
@@ -128,11 +157,13 @@ func parseArpDarwin(r io.Reader) Result {
 ? (192.168.1.188) at e4:0d:36:fe:8c:f1 [ether] on enp4s0
 ? (192.168.1.213) at f0:9f:c2:60:2b:17 [ether] on enp4s0
 */
-func parseArpLinux(r io.Reader) Result {
+func parseArpLinux(r io.Reader) []Hit {
 	return parseArpDarwin(r)
 }
 
 var whitespaces = regexp.MustCompile(`\s+`)
 
-// map of ip -> mac
-type Result map[string]string
+type Hit struct {
+	IP  string
+	MAC string
+}

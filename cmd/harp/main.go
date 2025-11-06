@@ -4,9 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net"
-	"slices"
-	"strings"
 	"time"
 
 	"github.com/gregoryv/harp"
@@ -15,7 +12,7 @@ import (
 func main() {
 	log.SetFlags(0)
 	targetIP := flag.String(
-		"ip", "", "arp IP range, e.g 192.1.1.3-128 or 192.1.1.*",
+		"ip", "", "IP range to scan, e.g 192.1.1.3-128 or 192.1.1.*",
 	)
 	flag.Parse()
 
@@ -30,36 +27,8 @@ func main() {
 
 		time.Sleep(8 * time.Duration(len(ips)) * time.Millisecond)
 	}
-	res := harp.Cache()
-	// ParseARPCache(bytes.NewReader(data))
 
-	var ipList []string
-	for ip := range res {
-		switch {
-		case strings.HasPrefix(ip, "224.0.0."):
-		case strings.HasPrefix(ip, "239.192.152."):
-		case strings.HasPrefix(ip, "239.255.255."):
-		default:
-			ipList = append(ipList, ip)
-		}
-	}
-	slices.SortFunc(ipList, func(a, b string) int {
-		ipA := net.ParseIP(a).To4()[3]
-		ipB := net.ParseIP(b).To4()[3]
-		switch {
-		case ipA < ipB:
-			return -1
-		case ipA > ipB:
-			return 1
-		default:
-			return 0
-		}
-	})
-	for _, ip := range ipList {
-		mac := strings.ToLower(res[ip])
-		if mac == "ff:ff:ff:ff:ff:ff" {
-			continue
-		}
-		fmt.Println(mac, ip)
+	for _, hit := range harp.Cache() {
+		fmt.Println(hit.MAC, hit.IP)
 	}
 }
