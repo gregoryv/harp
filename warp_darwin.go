@@ -3,21 +3,14 @@ package warp
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"net"
 	"os"
 	"syscall"
 )
 
-func sendARP(ip net.IP, iface net.Interface) error {
-	srcIP, err := getInterfaceIPv4(&iface)
-	if err != nil {
-		return fmt.Errorf("Could not get source IP for %s: %v. Check IP configuration.", iface.Name, err)
-	}
-
-	// 2. Build the Raw ARP Packet
-	packetBytes := buildARPPacket(iface.HardwareAddr, srcIP, ip)
-
+func sendARP(ips []net.IP, iface net.Interface) error {
 	// 1. Open BPF Device
 	bpfFile, err := openBPFDevice()
 	if err != nil {
@@ -42,16 +35,27 @@ func sendARP(ip net.IP, iface net.Interface) error {
 	// For this example, we skip the complex ioctl binding and go straight to writing.
 	// WARNING: Without the ioctl binding, the packet may not go out the intended interface.
 
-	// 3. Send the packet (raw write to the BPF file descriptor)
-	// The BPF device expects the complete, raw Ethernet frame.
-	n, err := syscall.Write(fd, packetBytes)
+	for _, ip := range ips {
+		e := writeARP(ip, iface, fd)
+		err = errors.Join(err, e)
+	}
+	return err
+}
+
+func writeARP(ip net.IP, iface net.Interface, fd int) error {
+	srcIP, err := getInterfaceIPv4(&iface)
+	if err != nil {
+		return fmt.Errorf("Could not get source IP for %s: %v. Check IP configuration.", iface.Name, err)
+	}
+
+	data := NewARPRequest(ip, &iface, srcIP)
+	n, err := syscall.Write(fd, data)
 	if err != nil {
 		return fmt.Errorf("failed to write to BPF device: %w", err)
 	}
-	if n != len(packetBytes) {
-		return fmt.Errorf("wrote %d bytes, expected %d", n, len(packetBytes))
+	if n != len(data) {
+		return fmt.Errorf("wrote %d bytes, expected %d", n, len(data))
 	}
-
 	return nil
 }
 

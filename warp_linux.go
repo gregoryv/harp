@@ -1,6 +1,7 @@
 package warp
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"syscall"
@@ -8,12 +9,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func sendARP(ip net.IP, iface net.Interface) error {
-	srcIP, err := getInterfaceIPv4(&iface)
-	if err != nil {
-		return fmt.Errorf("Could not get source IP for %s: %v. Check IP configuration.", iface.Name, err)
-	}
-
+func sendARP(ips []net.IP, iface net.Interface) error {
 	// Create the Raw Socket
 	// AF_PACKET: Address family for the device-level packet interface
 	// SOCK_RAW: We supply the entire frame (including Ethernet header)
@@ -23,6 +19,19 @@ func sendARP(ip net.IP, iface net.Interface) error {
 		return fmt.Errorf("Failed to create raw socket. You need root privileges: %v", err)
 	}
 	defer syscall.Close(fd) // todo why Close after each send
+
+	for _, ip := range ips {
+		e := writeARP(ip, iface, fd)
+		err = errors.Join(err, e)
+	}
+	return err
+}
+
+func writeARP(ip net.IP, iface net.Interface, fd int) error {
+	srcIP, err := getInterfaceIPv4(&iface)
+	if err != nil {
+		return fmt.Errorf("Could not get source IP for %s: %v. Check IP configuration.", iface.Name, err)
+	}
 
 	// Define the target address structure (SockaddrLinklayer) This
 	// tells the kernel which interface to send the raw data out of.

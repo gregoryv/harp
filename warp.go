@@ -1,18 +1,12 @@
 package warp
 
 import (
-	"errors"
 	"fmt"
 	"net"
 )
 
-func SendARP(ips []net.IP, ic net.Interface) error {
-	var err error
-	for _, ip := range ips {
-		e := sendARP(ip, ic)
-		err = errors.Join(err, e)
-	}
-	return err
+func SendARP(ips []net.IP, iface net.Interface) error {
+	return sendARP(ips, iface)
 }
 
 // getInterfaceIPv4 finds the primary IPv4 address of a given interface.

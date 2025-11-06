@@ -2,6 +2,7 @@ package warp
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"net"
 	"unsafe"
@@ -9,7 +10,16 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-func sendARP(ip net.IP, iface net.Interface) error {
+func sendARP(ips []net.IP, iface net.Interface) error {
+	var err error
+	for _, ip := range ips {
+		e := writeARP(ip, iface)
+		err = errors.Join(err, e)
+	}
+	return err
+}
+
+func writeARP(ip net.IP, iface net.Interface) error {
 	ipv4 := ip.To4()
 	if ipv4 == nil {
 		return fmt.Errorf("sendARP(%q): not ipv4", ip.String())
