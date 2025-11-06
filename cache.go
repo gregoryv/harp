@@ -14,6 +14,8 @@ import (
 	"strings"
 )
 
+// Cache uses arp command to list currently cached hits. The result is
+// a sorted list of hits by IP.
 func Cache() []Hit {
 	data, err := exec.Command("arp", "-a").Output()
 	if err != nil {
