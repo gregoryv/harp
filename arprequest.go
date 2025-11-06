@@ -8,13 +8,12 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
-// writeARP writes an ARP request for each address on our local
-// network to the pcap handle.
-func NewARPRequest(iface *net.Interface, addr *net.IPNet, ip net.IP) []byte {
+// NewARPRequest returns serialized ARP request for the given ip.
+func NewARPRequest(ip net.IP, iface *net.Interface, source net.IP) []byte {
 	// Set up all the layers' fields we can.
 	eth := layers.Ethernet{
 		SrcMAC:       iface.HardwareAddr,
-		DstMAC:       net.HardwareAddr{0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+		DstMAC:       net.HardwareAddr{255, 255, 255, 255, 255, 255},
 		EthernetType: layers.EthernetTypeARP,
 	}
 	arp := layers.ARP{
@@ -24,8 +23,9 @@ func NewARPRequest(iface *net.Interface, addr *net.IPNet, ip net.IP) []byte {
 		ProtAddressSize:   4,
 		Operation:         layers.ARPRequest,
 		SourceHwAddress:   []byte(iface.HardwareAddr),
-		SourceProtAddress: []byte(addr.IP),
+		SourceProtAddress: []byte(source),
 		DstHwAddress:      []byte{0, 0, 0, 0, 0, 0},
+		DstProtAddress:    []byte(ip),
 	}
 	// Set up buffer and options for serialization.
 	buf := gopacket.NewSerializeBuffer()
@@ -33,7 +33,6 @@ func NewARPRequest(iface *net.Interface, addr *net.IPNet, ip net.IP) []byte {
 		FixLengths:       true,
 		ComputeChecksums: true,
 	}
-	arp.DstProtAddress = []byte(ip)
 	gopacket.SerializeLayers(buf, opts, &eth, &arp)
 	return slices.Clone(buf.Bytes())
 }

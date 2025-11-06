@@ -17,7 +17,8 @@ func sendARP(ip net.IP, iface net.Interface) error {
 	}
 
 	// 2. Build the Raw ARP Packet
-	packetBytes := buildARPPacket(iface.HardwareAddr, srcIP, ip)
+	// buildARPPacket(iface.HardwareAddr, srcIP, ip)
+	packetBytes := NewARPRequest(ip, &iface, srcIP)
 
 	// 3. Create the Raw Socket
 	// AF_PACKET: Address family for the device-level packet interface
