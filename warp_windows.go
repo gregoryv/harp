@@ -8,7 +8,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-func sendARP(ip net.IP) error {
+func sendARP(ip net.IP, _ net.Interface) error {
 	ipv4 := ip.To4()
 	if ipv4 == nil {
 		return fmt.Errorf("sendARP(%q): not ipv4", ip.String())
@@ -18,6 +18,7 @@ func sendARP(ip net.IP) error {
 	destIP := uint32(ipv4[0]) | uint32(ipv4[1])<<8 | uint32(ipv4[2])<<16 | uint32(ipv4[3])<<24
 
 	// Note: You can optionally specify a source IP here instead of 0 to force a specific interface.
+	// todo ip from interface name
 	srcIP := uint32(0) // 0 lets Windows choose the best interface
 
 	// 2. Prepare buffers for the response
