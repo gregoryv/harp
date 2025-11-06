@@ -10,16 +10,10 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func sendARP(ip net.IP, ic net.Interface) error {
-	// 1. Get interface information
-	iface, err := net.InterfaceByName(ic.Name)
+func sendARP(ip net.IP, iface net.Interface) error {
+	srcIP, err := getInterfaceIPv4(&iface)
 	if err != nil {
-		return fmt.Errorf("Error finding interface %s: %v. Check interface name.", ic.Name, err)
-	}
-
-	srcIP, err := getInterfaceIPv4(iface)
-	if err != nil {
-		return fmt.Errorf("Could not get source IP for %s: %v. Check IP configuration.", ic.Name, err)
+		return fmt.Errorf("Could not get source IP for %s: %v. Check IP configuration.", iface.Name, err)
 	}
 
 	// 2. Build the Raw ARP Packet
@@ -45,13 +39,7 @@ func sendARP(ip net.IP, ic net.Interface) error {
 		Halen:    6, // MAC address length
 	}
 
-	// 5. Send the packet
-	fmt.Printf("Sending ARP Request from %s (%s) to resolve %s on interface %s...\n",
-		iface.HardwareAddr, srcIP, ip, ic.Name)
-
 	return syscall.Sendto(fd, packetBytes, 0, &addr)
-
-	// NOTE: Receiving the reply would require another raw socket read loop.
 }
 
 // --- Packet Structure Definitions ---

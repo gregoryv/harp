@@ -39,6 +39,7 @@ func main() {
 			selectedInterface = ic
 		}
 	}
+
 	if *targetIP != "" {
 		ips, err := warp.IPRange(*targetIP)
 		if err != nil {
