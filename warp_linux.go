@@ -39,7 +39,7 @@ func sendARP(ip net.IP, iface net.Interface) error {
 		Pkttype:  syscall.PACKET_HOST,
 		Halen:    6, // MAC address length
 	}
-
+	debug.Println("sendARP to", ip.String(), len(packetBytes), "bytes")
 	return syscall.Sendto(fd, packetBytes, 0, &addr)
 }
 
