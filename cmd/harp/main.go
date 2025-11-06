@@ -10,14 +10,24 @@ import (
 )
 
 func main() {
+	flag.Usage = func() {
+		fmt.Println(`Usage: harp [IP]
+
+Examples
+
+  $ harp 192.168.1.3
+  $ harp 192.168.1.3-9
+  $ harp 192.168.1.*
+
+without IP harp shows the arp -a cache.
+`)
+	}
 	log.SetFlags(0)
-	targetIP := flag.String(
-		"ip", "", "IP range to scan, e.g 192.1.1.3-128 or 192.1.1.*",
-	)
 	flag.Parse()
 
-	if *targetIP != "" {
-		ips, err := harp.IPRange(*targetIP)
+	targetIP := flag.Arg(0)
+	if targetIP != "" {
+		ips, err := harp.IPRange(targetIP)
 		if err != nil {
 			log.Fatal(err)
 		}
