@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func headAll(ips []net.IP) {
+func Scan(ips []net.IP) error {
 	client := &http.Client{
 		Timeout: 100 * time.Millisecond, // total time for the request
 	}
@@ -22,4 +22,5 @@ func headAll(ips []net.IP) {
 		}()
 	}
 	wg.Wait()
+	return nil
 }
