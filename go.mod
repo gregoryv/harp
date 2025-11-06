@@ -1,4 +1,4 @@
-module github.com/gregoryv/warp
+module github.com/gregoryv/harp
 
 go 1.24.0
 

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gregoryv/warp"
+	"github.com/gregoryv/harp"
 )
 
 func main() {
@@ -24,25 +24,25 @@ func main() {
 	flag.Parse()
 
 	if *verbose {
-		warp.SetDebugOutput(os.Stderr)
+		harp.SetDebugOutput(os.Stderr)
 	}
 
 	if *targetIP != "" {
-		ips, err := warp.IPRange(*targetIP)
+		ips, err := harp.IPRange(*targetIP)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if err := warp.Scan(ips); err != nil {
+		if err := harp.Scan(ips); err != nil {
 			log.Fatal(err)
 		}
 
-		time.Sleep(time.Duration(len(ips)) * time.Millisecond)
+		time.Sleep(8 * time.Duration(len(ips)) * time.Millisecond)
 	}
 	data, err := exec.Command("arp", "-a").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	res := warp.ParseARPCache(bytes.NewReader(data))
+	res := harp.ParseARPCache(bytes.NewReader(data))
 
 	var ipList []string
 	for ip := range res {
