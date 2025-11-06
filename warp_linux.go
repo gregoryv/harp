@@ -1,7 +1,10 @@
 package warp
 
-import "fmt"
+import (
+	"fmt"
+	"net"
+)
 
-func SendARP(_ string) error {
+func sendARP(_ net.IP) error {
 	return fmt.Errorf(": todo")
 }

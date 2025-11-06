@@ -8,16 +8,10 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-func SendARP(targetIPStr string) error {
-	// 1. Convert the target IP string to a 32-bit unsigned integer
-	ip := net.ParseIP(targetIPStr)
-	if ip == nil {
-		return fmt.Errorf("invalid IP address format: %s", targetIPStr)
-	}
-	// We only work with IPv4 addresses for SendARP
+func sendARP(ip net.IP) error {
 	ipv4 := ip.To4()
 	if ipv4 == nil {
-		return fmt.Errorf("IP address is not a valid IPv4 address: %s", targetIPStr)
+		return fmt.Errorf("sendARP(%q): not ipv4", ip.String())
 	}
 
 	// Convert byte slice to uint32 (big-endian to little-endian for Windows IPAddr struct)
@@ -32,15 +26,12 @@ func SendARP(targetIPStr string) error {
 
 	// 3. Call the SendARP API function
 	// The call takes raw pointers via unsafe, as required for system calls
-	_, _, err := sendARP.Call(
+	phlSendARP.Call(
 		uintptr(destIP),
 		uintptr(srcIP),
 		uintptr(unsafe.Pointer(&macAddr[0])),
 		uintptr(unsafe.Pointer(&macLen)),
 	)
-	if err != nil {
-		fmt.Println(err)
-	}
 	return nil
 }
 
@@ -48,6 +39,6 @@ func SendARP(targetIPStr string) error {
 // This signature matches the C function: DWORD SendARP(IPAddr DestIP,
 // IPAddr SrcIP, PULONG pMacAddr, PULONG PhyAddrLen);
 var (
-	iphlpapi = windows.NewLazySystemDLL("iphlpapi.dll")
-	sendARP  = iphlpapi.NewProc("SendARP")
+	iphlpapi   = windows.NewLazySystemDLL("iphlpapi.dll")
+	phlSendARP = iphlpapi.NewProc("SendARP")
 )

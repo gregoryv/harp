@@ -2,14 +2,22 @@ package main
 
 import (
 	"flag"
+	"log"
 
 	"github.com/gregoryv/warp"
 )
 
 func main() {
-	// Example usage: Try to find the MAC address of a local gateway or specific device
-	targetIP := flag.String("ip", "127.0.0.1", "IP you want to test")
+	targetIP := flag.String("ip", "127.0.0.1", "arp IP range")
 	flag.Parse()
 
-	warp.SendARP(*targetIP)
+	log.SetFlags(0)
+
+	ips, err := warp.IPRange(*targetIP)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, ip := range ips {
+		warp.SendARP(ip)
+	}
 }
