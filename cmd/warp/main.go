@@ -58,7 +58,13 @@ func main() {
 
 	var ipList []string
 	for ip := range res {
-		ipList = append(ipList, ip)
+		switch {
+		case strings.HasPrefix(ip, "224.0.0."):
+		case strings.HasPrefix(ip, "239.192.152."):
+		case strings.HasPrefix(ip, "239.255.255."):
+		default:
+			ipList = append(ipList, ip)
+		}
 	}
 	slices.SortFunc(ipList, func(a, b string) int {
 		ipA := net.ParseIP(a).To4()[3]
@@ -73,8 +79,11 @@ func main() {
 		}
 	})
 	for _, ip := range ipList {
-		mac := res[ip]
-		fmt.Println(strings.ToLower(mac), ip)
+		mac := strings.ToLower(res[ip])
+		if mac == "ff:ff:ff:ff:ff:ff" {
+			continue
+		}
+		fmt.Println(mac, ip)
 	}
 }
 
