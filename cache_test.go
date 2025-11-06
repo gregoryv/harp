@@ -9,7 +9,6 @@ func TestCache(t *testing.T) {
 	Cache()
 }
 
-
 func Test_parseArpWindows(t *testing.T) {
 	// arp -a
 	arpOutput := `
