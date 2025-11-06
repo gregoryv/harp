@@ -9,10 +9,13 @@ import (
 
 func pingAll(ips []net.IP) {
 	var wg sync.WaitGroup
+	c := make(chan struct{}, 25)
 	for _, ip := range ips {
 		wg.Add(1)
 		go func() {
+			c <- struct{}{}
 			ping(ip.String())
+			<-c
 			wg.Done()
 		}()
 	}
@@ -28,8 +31,7 @@ func ping(addr string) {
 		// Linux/macOS use -c for count
 		cmd = exec.Command("ping", "-c", "1", addr)
 	}
-	debug.Println("ping", addr)
 	if err := cmd.Run(); err != nil {
-		debug.Print(err)
+		debug.Println("ping", addr, err)
 	}
 }
