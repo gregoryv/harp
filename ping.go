@@ -1,9 +1,23 @@
 package warp
 
 import (
+	"net"
 	"os/exec"
 	"runtime"
+	"sync"
 )
+
+func pingAll(ips []net.IP) {
+	var wg sync.WaitGroup
+	for _, ip := range ips {
+		wg.Add(1)
+		go func() {
+			ping(ip.String())
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+}
 
 func ping(addr string) {
 	var cmd *exec.Cmd
