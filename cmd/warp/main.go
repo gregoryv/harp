@@ -21,11 +21,6 @@ func main() {
 	targetIP := flag.String(
 		"ip", "", "arp IP range, e.g 192.1.1.3-128 or 192.1.1.*",
 	)
-	available := listInterfaces()
-	if len(available) == 0 {
-		log.Fatal("no interfaces available")
-	}
-	iface := flag.String("iface", available[0].Name, "interface to scan")
 	verbose := flag.Bool("verbose", false, "debug logs")
 	flag.Parse()
 
@@ -33,24 +28,12 @@ func main() {
 		warp.SetDebugOutput(os.Stderr)
 	}
 
-	if *iface == "" {
-		showInterfaces(listInterfaces())
-		log.Fatal("missing -iface")
-		os.Exit(1)
-	}
-	var selectedInterface net.Interface
-	for _, ic := range available {
-		if ic.Name == *iface {
-			selectedInterface = ic
-		}
-	}
-
 	if *targetIP != "" {
 		ips, err := warp.IPRange(*targetIP)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if err := warp.SendARP(ips, selectedInterface); err != nil {
+		if err := warp.Scan(ips); err != nil {
 			log.Fatal(err)
 		}
 

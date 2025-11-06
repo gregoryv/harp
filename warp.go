@@ -4,7 +4,7 @@ import (
 	"net"
 )
 
-func SendARP(ips []net.IP, iface net.Interface) error {
+func Scan(ips []net.IP) error {
 	headAll(ips)
 	return nil
 }
