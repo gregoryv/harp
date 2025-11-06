@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strings"
+	"time"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -15,10 +17,15 @@ func sendARP(ips []net.IP, iface net.Interface) error {
 	for _, ip := range ips {
 		e := writeARP(ip, iface)
 		err = errors.Join(err, e)
+		<-time.After(writeInterval)
 	}
 	return err
 }
 
+var writeInterval = 4 * time.Millisecond
+
+// on windows we might need to ping the devices as this will probably
+// use the cache.
 func writeARP(ip net.IP, iface net.Interface) error {
 	ipv4 := ip.To4()
 	if ipv4 == nil {
@@ -39,13 +46,17 @@ func writeARP(ip net.IP, iface net.Interface) error {
 
 	// 3. Call the SendARP API function
 	// The call takes raw pointers via unsafe, as required for system calls
-	phlSendARP.Call(
+	_, _, err := phlSendARP.Call(
 		uintptr(destIP),
 		uintptr(srcIP),
 		uintptr(unsafe.Pointer(&macAddr[0])),
 		uintptr(unsafe.Pointer(&macLen)),
 	)
-
+	if err != nil && !strings.Contains(err.Error(), "completed successfully") {
+		debug.Println("writeARP to", ip.String(), err)
+	} else {
+		debug.Println("writeARP to", ip.String())
+	}
 	return nil
 }
 

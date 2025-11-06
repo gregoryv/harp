@@ -1,6 +1,7 @@
 package warp
 
 import (
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -15,4 +16,8 @@ func init() {
 	if yes, _ := strconv.ParseBool(os.Getenv("D")); yes {
 		debug.SetOutput(os.Stderr)
 	}
+}
+
+func SetDebugOutput(w io.Writer) {
+	debug.SetOutput(w)
 }

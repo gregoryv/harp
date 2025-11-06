@@ -26,7 +26,12 @@ func main() {
 		log.Fatal("no interfaces available")
 	}
 	iface := flag.String("iface", available[0].Name, "interface to scan")
+	verbose := flag.Bool("verbose", false, "debug logs")
 	flag.Parse()
+
+	if *verbose {
+		warp.SetDebugOutput(os.Stderr)
+	}
 
 	if *iface == "" {
 		showInterfaces(listInterfaces())

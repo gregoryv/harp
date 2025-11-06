@@ -18,7 +18,7 @@ func sendARP(ips []net.IP, iface net.Interface) error {
 	if err != nil {
 		return fmt.Errorf("Failed to create raw socket. You need root privileges: %v", err)
 	}
-	defer syscall.Close(fd) // todo why Close after each send
+	defer syscall.Close(fd)
 
 	for _, ip := range ips {
 		e := writeARP(ip, iface, fd)
@@ -44,6 +44,6 @@ func writeARP(ip net.IP, iface net.Interface, fd int) error {
 	}
 
 	data := NewARPRequest(ip, &iface, srcIP)
-	debug.Println("sendARP to", ip.String(), len(data), "bytes")
+	debug.Println("writeARP to", ip.String(), len(data), "bytes")
 	return syscall.Sendto(fd, data, 0, &addr)
 }
