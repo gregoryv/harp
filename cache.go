@@ -42,8 +42,10 @@ func Cache() []Hit {
 func tidy(res []Hit) []Hit {
 	list := make([]Hit, 0, len(res))
 	for _, hit := range res {
-		hit.MAC = strings.ToLower(hit.MAC)
+		// normalize macs to lowercase
+		hit.MAC = strings.ToLower(hit.MAC)			
 
+		// ignore some static entries most of us are not interested in
 		switch {
 		case strings.HasPrefix(hit.IP, "224.0.0."):
 		case strings.HasPrefix(hit.IP, "239.192.152."):
