@@ -86,20 +86,3 @@ _gateway (192.168.1.1) at ac:8b:a9:ab:b1:ad [ether] on enp4s0
 		t.Log(k, v)
 	}
 }
-
-// ip neigh show
-const ipOutputLinux = `
-192.168.1.62 dev enp4s0 lladdr f0:9f:c2:79:5c:ab REACHABLE 
-192.168.1.220 dev enp4s0 lladdr 06:9e:6f:94:0c:2e REACHABLE 
-192.168.1.71 dev enp4s0 lladdr c8:7f:54:03:a3:e3 REACHABLE 
-192.168.1.58 dev enp4s0 lladdr ac:91:a1:d5:0c:aa STALE 
-192.168.1.42 dev enp4s0 lladdr d8:b3:70:b0:0a:7d DELAY 
-192.168.1.190 dev enp4s0 lladdr 30:05:5c:a1:2a:77 STALE 
-192.168.1.41 dev enp4s0 lladdr e0:63:da:b6:5a:74 REACHABLE 
-192.168.1.20 dev enp4s0 FAILED 
-192.168.1.55 dev enp4s0 lladdr f4:fe:fb:2e:c7:bc STALE 
-192.168.1.188 dev enp4s0 lladdr e4:0d:36:fe:8c:f1 STALE 
-192.168.1.213 dev enp4s0 lladdr f0:9f:c2:60:2b:17 REACHABLE 
-192.168.1.1 dev enp4s0 lladdr ac:8b:a9:ab:b1:ad REACHABLE 
-fe80::c94f:77d0:938:fe58 dev enp4s0 lladdr c8:7f:54:03:a3:e3 STALE
-`
