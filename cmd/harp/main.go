@@ -19,8 +19,7 @@ Examples
   $ harp 192.168.1.3-9
   $ harp 192.168.1.*
 
-without IP harp shows the arp -a cache.
-`)
+without IP harp shows the arp -a cache only.`)
 	}
 	log.SetFlags(0)
 	flag.Parse()
@@ -38,7 +37,11 @@ without IP harp shows the arp -a cache.
 		time.Sleep(8 * time.Duration(len(ips)) * time.Millisecond)
 	}
 
-	for _, hit := range harp.Cache() {
+	result, err := harp.Cache()
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, hit := range result {
 		fmt.Println(hit.MAC, hit.IP)
 	}
 }

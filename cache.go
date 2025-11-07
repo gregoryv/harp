@@ -15,12 +15,12 @@ import (
 
 // Cache uses arp command to list currently cached hits. The result is
 // a sorted list of hits by IP.
-func Cache() []Hit {
+func Cache() ([]Hit, error) {
 	data, err := exec.Command("arp", "-a").Output()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return ParseCache(data, runtime.GOOS)
+	return ParseCache(data, runtime.GOOS), nil
 }
 
 func ParseCache(data []byte, goos string) []Hit {
