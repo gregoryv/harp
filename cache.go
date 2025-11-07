@@ -3,7 +3,6 @@ package harp
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -27,11 +26,9 @@ func Cache() []Hit {
 	case "windows":
 		res = parseArpWindows(r)
 
-	case "darwin":
-		res = parseArpDarwin(r)
-
 	default:
 		// at least try something
+		// note darwin and linux are the same for now
 		res = parseArpLinux(r)
 	}
 
@@ -126,31 +123,7 @@ func parseArpWindows(r io.Reader) []Hit {
 mdns.mcast.net (224.0.0.251) at 1:0:5e:0:0:fb on en0 ifscope permanent [ethernet]
 */
 func parseArpDarwin(r io.Reader) []Hit {
-	res := make([]Hit, 0, 255)
-	s := bufio.NewScanner(r)
-	for s.Scan() {
-		line := s.Text()
-		line = strings.TrimSpace(line)
-		parts := strings.Split(line, " ")
-
-		var ip, mac string
-		if len(parts) > 1 {
-			ip = parts[1]
-		}
-		if len(parts) > 3 {
-			mac = parts[3]
-		}
-		ip = strings.Trim(ip, "()")
-		if v := net.ParseIP(ip); len(v) == 0 {
-			fmt.Println(ip)
-			continue
-		}
-		if _, err := net.ParseMAC(mac); err != nil {
-			continue
-		}
-		res = append(res, Hit{ip, mac})
-	}
-	return res
+	return parseArpLinux(r)
 }
 
 /*
@@ -167,7 +140,31 @@ func parseArpDarwin(r io.Reader) []Hit {
 ? (192.168.1.213) at f0:9f:c2:60:2b:17 [ether] on enp4s0
 */
 func parseArpLinux(r io.Reader) []Hit {
-	return parseArpDarwin(r)
+	res := make([]Hit, 0, 255)
+	s := bufio.NewScanner(r)
+	for s.Scan() {
+		line := s.Text()
+		line = strings.TrimSpace(line)
+		parts := strings.Split(line, " ")
+
+		var ip, mac string
+		if len(parts) > 1 {
+			ip = parts[1]
+		}
+		if len(parts) > 3 {
+			mac = parts[3]
+		}
+		ip = strings.Trim(ip, "()")
+		if v := net.ParseIP(ip); len(v) == 0 {
+			log.Println(ip, "not ip, unexpected output format")
+			continue
+		}
+		if _, err := net.ParseMAC(mac); err != nil {
+			continue
+		}
+		res = append(res, Hit{ip, mac})
+	}
+	return res
 }
 
 var whitespaces = regexp.MustCompile(`\s+`)
