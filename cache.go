@@ -20,9 +20,13 @@ func Cache() []Hit {
 	if err != nil {
 		log.Fatal(err)
 	}
+	return ParseCache(data, runtime.GOOS)
+}
+
+func ParseCache(data []byte, goos string) []Hit {
 	r := bytes.NewReader(data)
 	var res []Hit
-	switch runtime.GOOS {
+	switch goos {
 	case "windows":
 		res = parseArpWindows(r)
 
@@ -121,10 +125,12 @@ func parseArpWindows(r io.Reader) []Hit {
 ? (192.168.1.190) at 30:5:5c:a1:2a:77 on en0 ifscope [ethernet]
 ? (192.168.1.255) at ff:ff:ff:ff:ff:ff on en0 ifscope [ethernet]
 mdns.mcast.net (224.0.0.251) at 1:0:5e:0:0:fb on en0 ifscope permanent [ethernet]
-*/
+
+   hide for now
 func parseArpDarwin(r io.Reader) []Hit {
 	return parseArpLinux(r)
 }
+*/
 
 /*
 ? (192.168.1.62) at f0:9f:c2:79:5c:ab [ether] on enp4s0

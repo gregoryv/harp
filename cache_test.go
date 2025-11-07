@@ -1,7 +1,6 @@
 package harp
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -9,7 +8,7 @@ func TestCache(t *testing.T) {
 	Cache()
 }
 
-func Test_parseArpWindows(t *testing.T) {
+func TestParseCache_windows(t *testing.T) {
 	// arp -a
 	arpOutput := `
 
@@ -29,8 +28,7 @@ Interface: 192.168.1.71 --- 0x3
   239.255.255.250       01-00-5e-7f-ff-fa     static    
   255.255.255.255       ff-ff-ff-ff-ff-ff     static    
 `
-	r := strings.NewReader(arpOutput)
-	res := parseArpWindows(r)
+	res := ParseCache([]byte(arpOutput), "windows")
 	if v := len(res); v == 0 {
 		t.Error("empty result")
 	}
@@ -39,7 +37,7 @@ Interface: 192.168.1.71 --- 0x3
 	}
 }
 
-func Test_parseArpDarwin(t *testing.T) {
+func TestParseCache_darwin(t *testing.T) {
 	// arp -a
 	arpOutput := `
 ? (192.168.1.1) at ac:8b:a9:ab:b1:ad on en0 ifscope [ethernet]
@@ -51,8 +49,7 @@ func Test_parseArpDarwin(t *testing.T) {
 ? (192.168.1.255) at ff:ff:ff:ff:ff:ff on en0 ifscope [ethernet]
 mdns.mcast.net (224.0.0.251) at 1:0:5e:0:0:fb on en0 ifscope permanent [ethernet]
 `
-	r := strings.NewReader(arpOutput)
-	res := parseArpDarwin(r)
+	res := ParseCache([]byte(arpOutput), "darwin")
 	if v := len(res); v == 0 {
 		t.Error("empty result")
 	}
@@ -61,7 +58,7 @@ mdns.mcast.net (224.0.0.251) at 1:0:5e:0:0:fb on en0 ifscope permanent [ethernet
 	}
 }
 
-func Test_parseArpLinux(t *testing.T) {
+func TestParseCache_linux(t *testing.T) {
 	// arp -a
 	arpOutput := `
 ? (192.168.1.62) at f0:9f:c2:79:5c:ab [ether] on enp4s0
@@ -77,8 +74,7 @@ func Test_parseArpLinux(t *testing.T) {
 ? (192.168.1.213) at f0:9f:c2:60:2b:17 [ether] on enp4s0
 _gateway (192.168.1.1) at ac:8b:a9:ab:b1:ad [ether] on enp4s0
 `
-	r := strings.NewReader(arpOutput)
-	res := parseArpLinux(r)
+	res := ParseCache([]byte(arpOutput), "linux")
 	if v := len(res); v == 0 {
 		t.Error("empty result")
 	}
