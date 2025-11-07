@@ -59,14 +59,12 @@ func tidy(res []Hit) []Hit {
 	slices.SortFunc(list, func(a, b Hit) int {
 		ipA := net.ParseIP(a.IP).To4()[3]
 		ipB := net.ParseIP(b.IP).To4()[3]
-		switch {
-		case ipA < ipB:
-			return -1
-		case ipA > ipB:
+		if ipA > ipB {
 			return 1
-		default:
-			return 0
 		}
+		// -1 or zero doesn't really matter, the order will still
+		// be a before b
+		return -1
 	})
 	return list
 }
