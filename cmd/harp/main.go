@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/gregoryv/harp"
 )
@@ -33,8 +32,6 @@ without IP harp shows the arp -a cache only.`)
 		if err := harp.Scan(ips); err != nil {
 			log.Fatal(err)
 		}
-
-		time.Sleep(8 * time.Duration(len(ips)) * time.Millisecond)
 	}
 
 	result, err := harp.Cache()
