@@ -12,10 +12,17 @@ func Scan(ips []net.IP) error {
 	for _, ip := range ips {
 		wg.Add(1)
 		go func() {
-			net.Dial("tcp4", ip.String()+":80")
+			probe(ip)
 			wg.Done()
 		}()
 	}
 	wg.Wait()
 	return nil
+}
+
+func probe(ip net.IP) {
+	con, _ := net.Dial("tcp4", ip.String()+":80")
+	if con != nil {
+		con.Close()
+	}
 }
