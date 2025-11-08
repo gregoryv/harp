@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 
 	"github.com/gregoryv/harp"
 )
@@ -29,7 +30,22 @@ without IP harp shows the arp -a cache only.`)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if err := harp.Scan(ips); err != nil {
+
+		// remove existing ips if already cached
+		cache, _ := harp.Cache()
+		existingIP := make(map[string]struct{})
+		for _, hit := range cache {
+			existingIP[hit.IP] = struct{}{}
+		}
+
+		filtered := make([]net.IP, 0, len(ips))
+		for _, ip := range ips {
+			if _, found := existingIP[ip.String()]; !found {
+				filtered = append(filtered, ip)
+			}
+		}
+
+		if err := harp.Scan(filtered); err != nil {
 			log.Fatal(err)
 		}
 	}
