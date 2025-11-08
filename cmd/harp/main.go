@@ -11,7 +11,7 @@ import (
 
 func main() {
 	flag.Usage = func() {
-		fmt.Println(`Usage: harp [IP]
+		fmt.Println(`Usage: harp [IP-range]
 
 Examples
 
@@ -19,20 +19,24 @@ Examples
   $ harp 192.168.1.3-9
   $ harp 192.168.1.*
 
-without IP harp shows the arp -a cache only.`)
+without IP-range harp shows the arp -a cache only.`)
 	}
 	log.SetFlags(0)
 	flag.Parse()
 
-	targetIP := flag.Arg(0)
-	if targetIP != "" {
-		ips, err := harp.IPRange(targetIP)
+	rangestr := flag.Arg(0)
+	if rangestr != "" {
+		ips, err := harp.IPRange(rangestr)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		// remove existing ips if already cached
-		cache, _ := harp.Cache()
+		cache, err := harp.Cache()
+		if err != nil {
+			// fail early here incase the command is not found
+			log.Fatal(err)
+		}
 		existingIP := make(map[string]struct{})
 		for _, hit := range cache {
 			existingIP[hit.IP] = struct{}{}

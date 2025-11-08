@@ -13,8 +13,8 @@ import (
 	"strings"
 )
 
-// Cache uses arp command to list currently cached hits. The result is
-// a sorted list of hits by IP.
+// Cache uses 'arp -a' command to list currently cached hits. The
+// result is a sorted list of hits by IP.
 func Cache() ([]Hit, error) {
 	data, err := exec.Command("arp", "-a").Output()
 	if err != nil {
@@ -23,6 +23,8 @@ func Cache() ([]Hit, error) {
 	return ParseCache(data, runtime.GOOS), nil
 }
 
+// ParseCache handles OS specific output of arp -a as they differe
+// slightly.
 func ParseCache(data []byte, goos string) []Hit {
 	r := bytes.NewReader(data)
 	var res []Hit
