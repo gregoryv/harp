@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 
 	"github.com/gregoryv/harp"
 )
 
 func main() {
 	flag.Usage = func() {
-		fmt.Println(`Usage: harp [IP-range]
+		fmt.Printf(`Usage: %s [OPTIONS] [IP-range]
 
 Examples
 
@@ -19,10 +20,16 @@ Examples
   $ harp 192.168.1.3-9
   $ harp 192.168.1.*
 
-without IP-range harp shows the arp -a cache only.`)
+without IP-range harp shows the arp -a cache only.
+
+Options
+`, os.Args[0])
+		flag.PrintDefaults()
 	}
 	log.SetFlags(0)
 	flag.Parse()
+
+	version()
 
 	rangestr := flag.Arg(0)
 	if rangestr != "" {
